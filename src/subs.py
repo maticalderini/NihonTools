@@ -34,8 +34,12 @@ class SubParser():
         subs = srt.parse(subs)
         return(subs)
     
-    def get_movie_content(self, line):
-        content = line.content if (line.start > self.start) and (line.end < self.end) else None   
+    def get_movie_content(self, subs):
+        '''
+        Takes iterable of srt sub objects and keeps those
+        within the movie start and end time
+        '''
+        content = [line.content for line in subs if (line.start > self.start) and (line.end < self.end)]   
         return(content)
     
     def clean_line(self, line):
@@ -43,10 +47,13 @@ class SubParser():
         return(line)
 
     def get_text(self, subs):
-        subs_text = [self.get_movie_content(line) for line in subs]
-        subs_text = [self.clean_line(line) for line in subs_text if line]
+        subs_text = [self.clean_line(line) for line in self.get_movie_content(subs)]
         return(subs_text)
 
+    def save_text(self, lines, save_path):
+        with open(save_path, 'w+') as f:
+            f.writelines('\n'.join(lines))
+        
 #%%
 if __name__ == '__main__':
     # data_url = 'https://kitsunekko.net/subtitles/Tonari%20no%20Totoro/Moj.sosed.Totoro.1988.DUAL.BDRip.XviD.AC3.-HQCLUB.ENG.srt'
@@ -55,10 +62,6 @@ if __name__ == '__main__':
 
     save_path = save_dir/filename
 
-    # fetcher = SubFetcher()
-    # subs = fetcher.fetch_subs(data_url, save_path=save_path)
-
-
     start = timedelta(minutes=2, seconds=32)
     end = timedelta(hours=1, minutes=23, seconds=24)
     parser = SubParser(start=start, end=end)
@@ -66,4 +69,7 @@ if __name__ == '__main__':
     # subs = list(subs)
     # test_line = list(subs)[0]
     all_text = parser.get_text(subs)
+
+    parser.save_text(lines=all_text,
+                      save_path=save_dir.parent/'proc'/('textonly_' + filename.removesuffix('.srt') + '.txt'))
 # %%

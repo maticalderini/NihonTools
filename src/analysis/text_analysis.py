@@ -5,6 +5,10 @@ from wordcloud import WordCloud, ImageColorGenerator
 from PIL import Image
 import numpy as np
 
+class TExtAnalysis():
+    def __init__(self, text_path):
+        pass 
+
 #%%
 if __name__ == '__main__':
     data_dir = Path('/workspaces/2021-06-21/data')

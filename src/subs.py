@@ -43,33 +43,49 @@ class SubParser():
         return(content)
     
     def clean_line(self, line):
-        line = line.replace('\n', ' ')
+        """ Cleans up the line string (content)
+
+        Args:
+            line (str): a subtitle line (most often an srt.content)
+        """
+        mapping = {'\n': ' ', '\u3000': ' ', '♪♪～':''}
+        
+        for original, replacement in mapping.items():
+            line = line.replace(original, replacement)    
         return(line)
 
     def get_text(self, subs):
         subs_text = [self.clean_line(line) for line in self.get_movie_content(subs)]
+        subs_text = [line for line in subs_text if line != '']
         return(subs_text)
 
     def save_text(self, lines, save_path):
         with open(save_path, 'w+') as f:
             f.writelines('\n'.join(lines))
-        
+
 #%%
 if __name__ == '__main__':
-    # data_url = 'https://kitsunekko.net/subtitles/Tonari%20no%20Totoro/Moj.sosed.Totoro.1988.DUAL.BDRip.XviD.AC3.-HQCLUB.ENG.srt'
-    save_dir = Path(__file__).parents[1]/'data'/'raw'
-    filename = 'totoro_subs_en.srt'
+    url = 'https://kitsunekko.net/subtitles/japanese/Tonari%20no%20Totoro/tonari%20no%20totoro%20[bd%20x264%20720p%20aac%20sub(chs,cht,jap,eng,ger,fre,ita,kor)][kamigami].ja.srt'
+    save_dir = Path(__file__).parents[1]/'data'/'raw'/'subs'
+    filename = 'totoro_subs_jp.srt'
+    
+    start = timedelta(minutes=2, seconds=32)
+    end = timedelta(hours=1, minutes=23, seconds=24)
 
     save_path = save_dir/filename
 
-    start = timedelta(minutes=2, seconds=32)
-    end = timedelta(hours=1, minutes=23, seconds=24)
+#%%
+    fetcher = SubFetcher()
+    fetcher.fetch_subs(url, save_path=save_path)
+
+#%%
     parser = SubParser(start=start, end=end)
+    
     subs = parser.load_subs(save_path)
-    # subs = list(subs)
-    # test_line = list(subs)[0]
+    subs = list(subs)
     all_text = parser.get_text(subs)
 
     parser.save_text(lines=all_text,
                       save_path=save_dir.parent/'proc'/('textonly_' + filename.removesuffix('.srt') + '.txt'))
+
 # %%
